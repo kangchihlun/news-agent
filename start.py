@@ -2,12 +2,21 @@ import openai
 import requests
 import json
 import schedule
+import platform
 import time
 from datetime import datetime, timedelta
+from dotenv import load_dotenv
+import os
 
-# 設定 API Keys
-OPENAI_API_KEY = "your-openai-api-key"
-NEWS_API_KEY = "your-newsapi-key"
+# Load environment variables from .env file
+load_dotenv()
+
+# Get API Keys from environment variables
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+NEWS_API_KEY = os.getenv("NEWS_API_KEY")
+
+if not OPENAI_API_KEY or not NEWS_API_KEY:
+    raise ValueError("Please set OPENAI_API_KEY and NEWS_API_KEY in your .env file")
 
 # 計算昨天的日期
 def get_yesterday():
@@ -84,8 +93,12 @@ def schedule_news_fetch():
     print("🔥 昨天最熱門的 5 則新聞 🔥")
     print(top_news)
 
-# 設定每天早上 9 點執行
-schedule.every().day.at("09:00").do(schedule_news_fetch)
+
+os_name = platform.system()
+if os_name == "Darwin":
+    schedule.every().minute.do(schedule_news_fetch)
+else:# 設定每天早上 9 點執行
+    schedule.every().day.at("09:00").do(schedule_news_fetch)
 
 # 持續運行
 if __name__ == "__main__":
